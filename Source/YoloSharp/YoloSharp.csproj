@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -8,18 +8,20 @@
 		<IsAotCompatible>true</IsAotCompatible>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<PackageName>YoloSharp</PackageName>
+		<OnnxRuntimeVersion>1.22.1</OnnxRuntimeVersion>
+		<OnnxRuntimePackage>Microsoft.ML.OnnxRuntime</OnnxRuntimePackage>
+		<PackageName Condition="'$(GpuPackage)' == 'true'">$(PackageName).Gpu</PackageName>
+		<PackageName Condition="'$(CorePackage)' == 'true'">$(PackageName).Core</PackageName>
+		<OnnxRuntimePackage Condition="'$(GpuPackage)' == 'true'">$(OnnxRuntimePackage).Gpu</OnnxRuntimePackage>
+		<OnnxRuntimePackage Condition="'$(CorePackage)' == 'true'">$(OnnxRuntimePackage).Managed</OnnxRuntimePackage>
+		<DefineConstants Condition="'$(GpuPackage)' == 'true'">$(DefineConstants);USE_CUDA_DEFAULT</DefineConstants>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
-		<PackageId>YoloSharp</PackageId>
-		<AssemblyName>YoloSharp</AssemblyName>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)' == 'GpuRelease'">
-		<PackageId>YoloSharp.Gpu</PackageId>
-		<AssemblyName>YoloSharp.Gpu</AssemblyName>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)' == 'Release' OR '$(Configuration)' == 'GpuRelease'">
-		<Optimize>true</Optimize>
+		<PackageId>$(PackageName)</PackageId>
+		<AssemblyName>$(PackageName)</AssemblyName>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Description>Use YOLO11 in real-time for object detection tasks, with edge performance, powered by ONNX-Runtime.</Description>
 		<RepositoryUrl>https://github.com/dme-compunet/YoloSharp</RepositoryUrl>
@@ -32,17 +34,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="..\..\Icon.png" Pack="True" PackagePath="" Visible="False" />
-		<None Include="..\..\README.md" Pack="True" PackagePath="" Visible="False" />
+		<None Include="..\..\Icon.png" Pack="True" PackagePath="" Visible="False"/>
+		<None Include="..\..\README.md" Pack="True" PackagePath="" Visible="False"/>
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Clipper2" Version="1.5.4" />
-		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.10" />
-		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.6" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
-		<PackageReference Condition="'$(Configuration)' != 'GpuRelease'" Include="Microsoft.ML.OnnxRuntime" Version="1.22.0" />
-		<PackageReference Condition="'$(Configuration)' == 'GpuRelease'" Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.22.0" />
+		<PackageReference Include="Clipper2" Version="1.5.4"/>
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.10"/>
+		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.6"/>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6"/>
+		<PackageReference Include="$(OnnxRuntimePackage)" Version="$(OnnxRuntimeVersion)"/>
 	</ItemGroup>
 
 </Project>
