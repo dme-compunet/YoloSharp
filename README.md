@@ -12,10 +12,14 @@
 
 # Installation
 
-This project provides two NuGet packages:
+The project provides the following NuGet packages:
 
-- For CPU inference, use the package: [YoloSharp](https://www.nuget.org/packages/YoloSharp) (includes the [Microsoft.ML.OnnxRuntime](https://www.nuget.org/packages/Microsoft.ML.OnnxRuntime) package)
-- For GPU inference, use the package: [YoloSharp.Gpu](https://www.nuget.org/packages/YoloSharp.Gpu) (includes the [Microsoft.ML.OnnxRuntime.Gpu](https://www.nuget.org/packages/Microsoft.ML.OnnxRuntime.Gpu) package)
+| Package                                                             | Description                               | Dependencies                                                                 |
+| ------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------- |
+| [**YoloSharp**](https://www.nuget.org/packages/YoloSharp)           | CPU-based inference                       | Includes all runtime dependencies (all platforms)                            |
+| [**YoloSharp.Gpu**](https://www.nuget.org/packages/YoloSharp.Gpu)   | GPU-based inference                       | Includes all runtime dependencies (all platforms)                            |
+| [**YoloSharp.Core**](https://www.nuget.org/packages/YoloSharp.Core) | Core library without runtime dependencies | None – suitable for lightweight production or for using alternative runtimes |
+
 
 # Usage
 
