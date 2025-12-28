@@ -24,13 +24,22 @@
 		<AssemblyName>$(PackageName)</AssemblyName>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Description>Use YOLO11 in real-time for object detection tasks, with edge performance, powered by ONNX-Runtime.</Description>
-		<RepositoryUrl>https://github.com/dme-compunet/YoloSharp</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/dme-compunet/YoloSharp</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/dme-compunet/YoloSharp.git</RepositoryUrl>
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>image-classification object-detection pose-estimation instance-segmentation onnx imagesharp onnx-runtime ultralytics yolov8 yolov10 yolo11 yolov12</PackageTags>
 		<PackageIcon>Icon.png</PackageIcon>
 		<Authors>Compunet</Authors>
 		<Version>6.0.6</Version>
+		<Deterministic>true</Deterministic>
+		<DebugType>embedded</DebugType>
+	</PropertyGroup>
+
+
+	<!-- Ensure nuget show deterministic tag as valid, https://devblogs.microsoft.com/dotnet/producing-packages-with-source-link/#deterministic-builds -->
+	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 	</PropertyGroup>
 
 	<ItemGroup>
