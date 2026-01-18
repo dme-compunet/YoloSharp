@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="YoloSharp.Demo/YoloSharp.Demo.csproj" />
+  <Project Path="YoloSharp.Tests/YoloSharp.Tests.csproj" />
+  <Project Path="YoloSharp/YoloSharp.csproj" />
+</Solution>
