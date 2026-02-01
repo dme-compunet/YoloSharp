@@ -1,6 +1,6 @@
 ﻿namespace Compunet.YoloSharp.Services;
 
-internal class PixelsNormalizerService : IPixelsNormalizerService
+internal class PixelsNormalizer : IPixelsNormalizer
 {
     public void NormalizerPixelsToTensor(Image<Rgb24> image, MemoryTensor<float> tensor, Vector<int> padding)
     {

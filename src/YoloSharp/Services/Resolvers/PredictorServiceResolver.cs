@@ -70,10 +70,10 @@ internal class PredictorServiceResolver : IDisposable
 
         services
             .AddSingleton(metadata)
-            .AddSingleton<ISessionRunnerService, SessionRunnerService>()
-            .AddSingleton<IMemoryAllocatorService, MemoryAllocatorService>()
-            .AddSingleton<IBoundingBoxTransformer, BoundingBoxTransformer>()
-            .AddSingleton<IPixelsNormalizerService, PixelsNormalizerService>();
+            .AddSingleton<ISessionRunner, SessionRunner>()
+            .AddSingleton<IMemoryAllocator, MemoryAllocator>()
+            .AddSingleton<IPixelsNormalizer, PixelsNormalizer>()
+            .AddSingleton<IBoundingBoxTransformer, BoundingBoxTransformer>();
 
         var task = metadata.Task;
         var version = metadata.Architecture;
@@ -113,11 +113,11 @@ internal class PredictorServiceResolver : IDisposable
     {
         if (obb)
         {
-            services.AddSingleton<INonMaxSuppressionService, ObbNonMaxSuppressionService>();
+            services.AddSingleton<INonMaxSuppression, ObbNonMaxSuppression>();
         }
         else
         {
-            services.AddSingleton<INonMaxSuppressionService, NonMaxSuppressionService>();
+            services.AddSingleton<INonMaxSuppression, NonMaxSuppression>();
         }
     }
 

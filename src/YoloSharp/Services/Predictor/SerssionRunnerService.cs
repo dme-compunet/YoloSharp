@@ -1,9 +1,9 @@
 ﻿namespace Compunet.YoloSharp.Services;
 
-internal class SessionRunnerService(YoloSession yoloSession,
-                                    YoloConfiguration configuration,
-                                    IPixelsNormalizerService normalizer,
-                                    IMemoryAllocatorService memoryAllocator) : ISessionRunnerService
+internal class SessionRunner(YoloSession yoloSession,
+                             YoloConfiguration configuration,
+                             IMemoryAllocator allocator,
+                             IPixelsNormalizer normalizer) : ISessionRunner
 {
     private readonly object _lock = new();
     private readonly RunOptions _options = new();
@@ -21,7 +21,7 @@ internal class SessionRunnerService(YoloSession yoloSession,
         timer.StartPreprocess();
 
         // Allocate the input tensor
-        using var input = memoryAllocator.AllocateTensor<float>(IoShapeInfo.Input0, true);
+        using var input = allocator.AllocateTensor<float>(IoShapeInfo.Input0, true);
 
         // Preprocess image to tensor and bind to ort binding
         NormalizeInput(image, input.Tensor);
@@ -103,7 +103,7 @@ internal class SessionRunnerService(YoloSession yoloSession,
         var output1Info = IoShapeInfo.Output1;
 
         // Allocate output0 tensor buffer
-        var output0 = memoryAllocator.AllocateTensor<float>(output0Info);
+        var output0 = allocator.AllocateTensor<float>(output0Info);
 
         // Create ort output0 value
         var ortOutput0 = CreateOrtValue(output0.Tensor);
@@ -114,7 +114,7 @@ internal class SessionRunnerService(YoloSession yoloSession,
         if (output1Info != null)
         {
             // Allocate output1 tensor buffer
-            var output1 = memoryAllocator.AllocateTensor<float>(output1Info.Value);
+            var output1 = allocator.AllocateTensor<float>(output1Info.Value);
 
             // Create ort output0 value
             var ortOutput1 = CreateOrtValue(output1.Tensor);

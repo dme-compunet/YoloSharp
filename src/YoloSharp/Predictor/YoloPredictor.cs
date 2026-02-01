@@ -39,7 +39,7 @@ public class YoloPredictor : IDisposable
         ValidateTask<T>();
 
         // Resolve runner service
-        var runner = _resolver.Resolve<ISessionRunnerService>();
+        var runner = _resolver.Resolve<ISessionRunner>();
 
         // Run the model (include pre-process)
         using var output = runner.PreprocessAndRun(image, out var timer);

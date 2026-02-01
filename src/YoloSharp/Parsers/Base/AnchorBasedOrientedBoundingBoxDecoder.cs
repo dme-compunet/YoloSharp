@@ -2,8 +2,8 @@
 
 internal class AnchorBasedOrientedBoundingBoxDecoder(YoloMetadata metadata,
                                                      YoloConfiguration configuration,
-                                                     IMemoryAllocatorService memoryAllocator,
-                                                     INonMaxSuppressionService nonMaxSuppression)
+                                                     IMemoryAllocator memoryAllocator,
+                                                     INonMaxSuppression nonMaxSuppression)
     : AnchorBasedBoundingBoxDecoder(metadata,
                                    configuration,
                                    memoryAllocator,

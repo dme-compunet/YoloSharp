@@ -1,6 +1,6 @@
 ﻿namespace Compunet.YoloSharp.Services;
 
-internal class ObbNonMaxSuppressionService : NonMaxSuppressionService
+internal class ObbNonMaxSuppression : NonMaxSuppression
 {
     protected override float CalculateIoU(RawBoundingBox box1, RawBoundingBox box2)
     {

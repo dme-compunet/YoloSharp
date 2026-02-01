@@ -1,6 +1,6 @@
 ﻿namespace Compunet.YoloSharp.Services;
 
-internal class MemoryAllocatorService : IMemoryAllocatorService
+internal class MemoryAllocator : IMemoryAllocator
 {
     #region ArrayMemoryPoolBuffer<T>
 

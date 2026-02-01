@@ -5,7 +5,7 @@ public class NonMaxSuppressionTests
     [Fact]
     public void NonMaxSuppressionTest()
     {
-        var nonMaxSuppression = new NonMaxSuppressionService();
+        var nonMaxSuppression = new NonMaxSuppression();
 
         var classA = new YoloName(0, "a");
         var classB = new YoloName(1, "b");

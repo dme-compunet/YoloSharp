@@ -3,7 +3,7 @@
 internal class SegmentationDecoder(YoloMetadata metadata,
                                    IBoundingBoxDecoder boxDecoder,
                                    IBoundingBoxTransformer transformer,
-                                   IMemoryAllocatorService memoryAllocator) : IDecoder<Segmentation>
+                                   IMemoryAllocator memoryAllocator) : IDecoder<Segmentation>
 {
     public Segmentation[] Decode(IYoloRawOutput output, Size size)
     {

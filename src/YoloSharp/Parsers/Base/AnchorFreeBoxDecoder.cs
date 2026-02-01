@@ -2,8 +2,8 @@
 
 internal class AnchorFreeBoxDecoder(YoloMetadata metadata,
                                             YoloConfiguration configuration,
-                                            IMemoryAllocatorService memoryAllocator,
-                                            INonMaxSuppressionService nonMaxSuppression) : IBoundingBoxDecoder
+                                            IMemoryAllocator memoryAllocator,
+                                            INonMaxSuppression nonMaxSuppression) : IBoundingBoxDecoder
 {
     public RawBoundingBox[] Decode(MemoryTensor<float> tensor)
     {

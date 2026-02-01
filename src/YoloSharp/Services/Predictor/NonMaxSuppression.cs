@@ -1,6 +1,6 @@
 ﻿namespace Compunet.YoloSharp.Services;
 
-internal class NonMaxSuppressionService : INonMaxSuppressionService
+internal class NonMaxSuppression : INonMaxSuppression
 {
     public RawBoundingBox[] Apply(Span<RawBoundingBox> boxes, float iouThreshold)
     {
