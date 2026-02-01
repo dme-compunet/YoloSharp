@@ -26,21 +26,21 @@ jobs:
 
       - name: Build & Pack YoloSharp
         run: |
-          dotnet build -c Release Source/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }}
-          dotnet pack -c Release -o . Source/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }}
+          dotnet build -c Release src/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }}
+          dotnet pack -c Release -o . src/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }}
         
       - name: Build & Pack YoloSharp.Gpu
         run: |
-          dotnet build -c Release Source/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }} -p:GpuPackage=true
-          dotnet pack -c Release -o . Source/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }} -p:GpuPackage=true
+          dotnet build -c Release src/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }} -p:GpuPackage=true
+          dotnet pack -c Release -o . src/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }} -p:GpuPackage=true
           
       - name: Build & Pack YoloSharp.Core
         run: |
-          dotnet build -c Release Source/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }} -p:CorePackage=true
-          dotnet pack -c Release -o . Source/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }} -p:CorePackage=true
+          dotnet build -c Release src/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }} -p:CorePackage=true
+          dotnet pack -c Release -o . src/YoloSharp/YoloSharp.csproj -p:Version=${{ env.VERSION }} -p:CorePackage=true
           
       - name: Run Tests
-        run: dotnet test Source/YoloSharp.Tests/YoloSharp.Tests.csproj
+        run: dotnet test src/YoloSharp.Tests/YoloSharp.Tests.csproj
 
       - name: Publish
         run: dotnet nuget push *.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
