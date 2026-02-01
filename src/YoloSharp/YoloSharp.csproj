@@ -10,7 +10,7 @@
 
 	<PropertyGroup>
 		<PackageName>YoloSharp</PackageName>
-		<OnnxRuntimeVersion>1.22.1</OnnxRuntimeVersion>
+		<OnnxRuntimeVersion>1.23.2</OnnxRuntimeVersion>
 		<OnnxRuntimePackage>Microsoft.ML.OnnxRuntime</OnnxRuntimePackage>
 		<PackageName Condition="'$(GpuPackage)' == 'true'">$(PackageName).Gpu</PackageName>
 		<PackageName Condition="'$(CorePackage)' == 'true'">$(PackageName).Core</PackageName>
