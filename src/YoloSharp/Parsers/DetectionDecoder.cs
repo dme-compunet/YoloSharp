@@ -1,14 +1,14 @@
 ﻿namespace Compunet.YoloSharp.Parsers;
 
 internal class DetectionDecoder(YoloMetadata metadata,
-                                IBoundingBoxDecoder rawBoundingBoxParser,
-                                IImageAdjustmentService imageAdjustment) : IDecoder<Detection>
+                                IBoundingBoxDecoder boxDecoder,
+                                IBoundingBoxTransformer transformer) : IDecoder<Detection>
 {
     public Detection[] Decode(IYoloRawOutput output, Size size)
     {
-        var boxes = rawBoundingBoxParser.Decode(output.Output0);
+        var boxes = boxDecoder.Decode(output.Output0);
 
-        var adjustment = imageAdjustment.Calculate(size);
+        var transform = transformer.Compute(size);
 
         var result = new Detection[boxes.Length];
 
@@ -19,7 +19,7 @@ internal class DetectionDecoder(YoloMetadata metadata,
             result[i] = new Detection
             {
                 Name = metadata.Names[box.NameIndex],
-                Bounds = imageAdjustment.Adjust(box.Bounds, adjustment),
+                Bounds = transformer.Apply(box.Bounds, transform),
                 Confidence = box.Confidence,
             };
         }

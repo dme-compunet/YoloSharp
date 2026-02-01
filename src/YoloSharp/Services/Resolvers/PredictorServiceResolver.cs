@@ -72,7 +72,7 @@ internal class PredictorServiceResolver : IDisposable
             .AddSingleton(metadata)
             .AddSingleton<ISessionRunnerService, SessionRunnerService>()
             .AddSingleton<IMemoryAllocatorService, MemoryAllocatorService>()
-            .AddSingleton<IImageAdjustmentService, ImageAdjustmentService>()
+            .AddSingleton<IBoundingBoxTransformer, BoundingBoxTransformer>()
             .AddSingleton<IPixelsNormalizerService, PixelsNormalizerService>();
 
         var task = metadata.Task;

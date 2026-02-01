@@ -1,14 +1,14 @@
 ﻿namespace Compunet.YoloSharp.Parsers;
 
 internal class ObbDetectionDecoder(YoloMetadata metadata,
-                                   IBoundingBoxDecoder rawBoundingBoxParser,
-                                   IImageAdjustmentService imageAdjustment) : IDecoder<ObbDetection>
+                                   IBoundingBoxDecoder boxDecoder,
+                                   IBoundingBoxTransformer transformer) : IDecoder<ObbDetection>
 {
     public ObbDetection[] Decode(IYoloRawOutput output, Size size)
     {
-        var boxes = rawBoundingBoxParser.Decode(output.Output0);
+        var boxes = boxDecoder.Decode(output.Output0);
 
-        var adjustment = imageAdjustment.Calculate(size);
+        var transform = transformer.Compute(size);
 
         var result = new ObbDetection[boxes.Length];
 
@@ -20,7 +20,7 @@ internal class ObbDetectionDecoder(YoloMetadata metadata,
             {
                 Name = metadata.Names[box.NameIndex],
                 Angle = box.Angle,
-                Bounds = imageAdjustment.Adjust(box.Bounds, adjustment),
+                Bounds = transformer.Apply(box.Bounds, transform),
                 Confidence = box.Confidence,
             };
         }

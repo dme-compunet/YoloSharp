@@ -1,15 +1,15 @@
 ﻿namespace Compunet.YoloSharp.Parsers;
 
 internal class PoseDecoder(YoloPoseMetadata metadata,
-                           IImageAdjustmentService imageAdjustment,
-                           IBoundingBoxDecoder rawBoundingBoxParser) : IDecoder<Pose>
+                           IBoundingBoxDecoder boxDecoder,
+                           IBoundingBoxTransformer transformer) : IDecoder<Pose>
 {
     public Pose[] Decode(IYoloRawOutput output, Size size)
     {
         var tensor = output.Output0;
-        var adjustment = imageAdjustment.Calculate(size);
+        var transform = transformer.Compute(size);
 
-        var boxes = rawBoundingBoxParser.Decode(tensor);
+        var boxes = boxDecoder.Decode(tensor);
 
         var shape = metadata.KeypointShape;
         var result = new Pose[boxes.Length];
@@ -32,11 +32,11 @@ internal class PoseDecoder(YoloPoseMetadata metadata,
             {
                 var offset = index * shape.Channels + offsetToKeypoint;
 
-                var pointX = tensorSpan[baseOffset + offset * strideF] - adjustment.Padding.X;
-                var pointY = tensorSpan[baseOffset + (offset + 1) * strideF] - adjustment.Padding.Y;
+                var pointX = tensorSpan[baseOffset + offset * strideF] - transform.Padding.X;
+                var pointY = tensorSpan[baseOffset + (offset + 1) * strideF] - transform.Padding.Y;
 
-                pointX *= adjustment.Ratio.X;
-                pointY *= adjustment.Ratio.Y;
+                pointX *= transform.Ratio.X;
+                pointY *= transform.Ratio.Y;
 
                 var pointConfidence = metadata.KeypointShape.Channels switch
                 {
@@ -56,7 +56,7 @@ internal class PoseDecoder(YoloPoseMetadata metadata,
             result[i] = new Pose(keypoints)
             {
                 Name = metadata.Names[box.NameIndex],
-                Bounds = imageAdjustment.Adjust(box.Bounds, adjustment),
+                Bounds = transformer.Apply(box.Bounds, transform),
                 Confidence = box.Confidence,
             };
         }

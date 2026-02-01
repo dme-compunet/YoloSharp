@@ -1,15 +1,13 @@
-﻿using System.Numerics.Tensors;
-
-namespace Compunet.YoloSharp.Parsers;
+﻿namespace Compunet.YoloSharp.Parsers;
 
 internal class SegmentationDecoder(YoloMetadata metadata,
-                                   IImageAdjustmentService imageAdjustment,
-                                   IMemoryAllocatorService memoryAllocator,
-                                   IBoundingBoxDecoder rawBoundingBoxParser) : IDecoder<Segmentation>
+                                   IBoundingBoxDecoder boxDecoder,
+                                   IBoundingBoxTransformer transformer,
+                                   IMemoryAllocatorService memoryAllocator) : IDecoder<Segmentation>
 {
     public Segmentation[] Decode(IYoloRawOutput output, Size size)
     {
-        var adjustment = imageAdjustment.Calculate(size);
+        var transform = transformer.Compute(size);
 
         var output0 = output.Output0;
         var output1 = output.Output1
@@ -20,8 +18,8 @@ internal class SegmentationDecoder(YoloMetadata metadata,
         var maskHeight = output1.Dimensions[2];
         var maskChannelCount = output1.Dimensions[1];
 
-        var maskPaddingX = adjustment.Padding.X * maskWidth / metadata.ImageSize.Width;
-        var maskPaddingY = adjustment.Padding.Y * maskHeight / metadata.ImageSize.Height;
+        var maskPaddingX = transform.Padding.X * maskWidth / metadata.ImageSize.Width;
+        var maskPaddingY = transform.Padding.Y * maskHeight / metadata.ImageSize.Height;
 
         maskWidth -= maskPaddingX * 2;
         maskHeight -= maskPaddingY * 2;
@@ -39,7 +37,7 @@ internal class SegmentationDecoder(YoloMetadata metadata,
 
         var output0Span = output0.Span;
 
-        var boxes = rawBoundingBoxParser.Decode(output0);
+        var boxes = boxDecoder.Decode(output0);
 
         var result = new Segmentation[boxes.Length];
 
@@ -48,7 +46,7 @@ internal class SegmentationDecoder(YoloMetadata metadata,
             var box = boxes[index];
             var boxIndex = box.Index;
 
-            var bounds = imageAdjustment.Adjust(box.Bounds, adjustment);
+            var bounds = transformer.Apply(box.Bounds, transform);
 
             // Collect the weights for this box
             for (var i = 0; i < maskChannelCount; i++)

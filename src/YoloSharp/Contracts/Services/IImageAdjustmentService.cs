@@ -1,8 +1,8 @@
 ﻿namespace Compunet.YoloSharp.Contracts.Services;
 
-internal interface IImageAdjustmentService
+internal interface IBoundingBoxTransformer
 {
-    public ImageAdjustmentInfo Calculate(Size size);
+    public Rectangle Apply(RectangleF rectangle, ImageTransform transform);
 
-    public Rectangle Adjust(RectangleF rectangle, ImageAdjustmentInfo adjustment);
+    public ImageTransform Compute(Size originalImageSize);
 }

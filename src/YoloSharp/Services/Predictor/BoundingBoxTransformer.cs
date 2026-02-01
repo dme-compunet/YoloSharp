@@ -1,19 +1,11 @@
 ﻿namespace Compunet.YoloSharp.Services;
 
-internal class ImageAdjustmentService(YoloConfiguration configuration, YoloMetadata metadata) : IImageAdjustmentService
+internal class BoundingBoxTransformer(YoloConfiguration configuration, YoloMetadata metadata) : IBoundingBoxTransformer
 {
-    public ImageAdjustmentInfo Calculate(Size size)
+    public Rectangle Apply(RectangleF rectangle, ImageTransform transform)
     {
-        var padding = CalculatePadding(size);
-        var ratio = CalculateRatio(size);
-
-        return new ImageAdjustmentInfo(padding, ratio);
-    }
-
-    public Rectangle Adjust(RectangleF rectangle, ImageAdjustmentInfo adjustment)
-    {
-        var padding = adjustment.Padding;
-        var ratio = adjustment.Ratio;
+        var padding = transform.Padding;
+        var ratio = transform.Ratio;
 
         var x = (rectangle.X - padding.X) * ratio.X;
         var y = (rectangle.Y - padding.Y) * ratio.Y;
@@ -21,6 +13,18 @@ internal class ImageAdjustmentService(YoloConfiguration configuration, YoloMetad
         var h = rectangle.Height * ratio.Y;
 
         return new Rectangle((int)x, (int)y, (int)w, (int)h);
+    }
+
+    public ImageTransform Compute(Size originalImageSize)
+    {
+        var padding = CalculatePadding(originalImageSize);
+        var ratio = CalculateRatio(originalImageSize);
+
+        return new ImageTransform
+        {
+            Padding = padding,
+            Ratio = ratio,
+        };
     }
 
     private Vector<int> CalculatePadding(Size size)
