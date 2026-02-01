@@ -1,4 +1,4 @@
-﻿namespace Compunet.YoloSharp.Parsers;
+﻿namespace Compunet.YoloSharp.Decoders;
 
 internal class SegmentationDecoder(YoloMetadata metadata,
                                    IBoundingBoxDecoder boxDecoder,

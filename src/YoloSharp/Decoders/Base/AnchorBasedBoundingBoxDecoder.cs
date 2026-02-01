@@ -1,4 +1,4 @@
-﻿namespace Compunet.YoloSharp.Parsers.Base;
+﻿namespace Compunet.YoloSharp.Decoders.Base;
 
 internal class AnchorBasedBoundingBoxDecoder(YoloMetadata metadata,
                                             YoloConfiguration configuration,

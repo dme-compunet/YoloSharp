@@ -47,11 +47,11 @@ public class YoloPredictor : IDisposable
         // Start postprocess timer
         timer.StartPostprocess();
 
-        // Resolve the parser
-        var parser = _resolver.Resolve<IDecoder<T>>(configuration);
+        // Resolve the decoder
+        var decoder = _resolver.Resolve<IDecoder<T>>(configuration);
 
         // Parse the tensor to result
-        var result = parser.Decode(output, image.Size);
+        var result = decoder.Decode(output, image.Size);
 
         // Create YoloResult
         return new YoloResult<T>(result)

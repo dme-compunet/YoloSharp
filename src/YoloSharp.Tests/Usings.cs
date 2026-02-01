@@ -1,6 +1,6 @@
 global using Compunet.YoloSharp;
 global using Compunet.YoloSharp.Metadata;
-global using Compunet.YoloSharp.Parsers.Base;
+global using Compunet.YoloSharp.Decoders.Base;
 global using Compunet.YoloSharp.Services;
 global using SixLabors.ImageSharp;
 global using System.ComponentModel;

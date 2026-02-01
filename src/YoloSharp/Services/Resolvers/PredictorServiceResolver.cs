@@ -81,7 +81,7 @@ internal class PredictorServiceResolver : IDisposable
         var obb = task == YoloTask.Obb;
 
         AddNonMaxSuppression(services, obb);
-        AddRawBoundingBoxParser(services, version, obb);
+        AddRawBoundingBoxDecoder(services, version, obb);
 
         switch (task)
         {
@@ -121,9 +121,8 @@ internal class PredictorServiceResolver : IDisposable
         }
     }
 
-    private static void AddRawBoundingBoxParser(ServiceCollection services, YoloArchitecture architecture, bool obb)
+    private static void AddRawBoundingBoxDecoder(ServiceCollection services, YoloArchitecture architecture, bool obb)
     {
-
         if (architecture == YoloArchitecture.AnchorFree)
         {
             if (obb)
@@ -148,7 +147,6 @@ internal class PredictorServiceResolver : IDisposable
                 services.AddSingleton<IBoundingBoxDecoder, AnchorBasedBoundingBoxDecoder>();
             }
         }
-
     }
 
     public void Dispose()
