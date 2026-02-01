@@ -1,11 +1,13 @@
-﻿namespace Compunet.YoloSharp.Parsers;
+﻿using System.Numerics.Tensors;
 
-internal class SegmentationParser(YoloMetadata metadata,
-                                  IImageAdjustmentService imageAdjustment,
-                                  IMemoryAllocatorService memoryAllocator,
-                                  IRawBoundingBoxParser rawBoundingBoxParser) : IParser<Segmentation>
+namespace Compunet.YoloSharp.Parsers;
+
+internal class SegmentationDecoder(YoloMetadata metadata,
+                                   IImageAdjustmentService imageAdjustment,
+                                   IMemoryAllocatorService memoryAllocator,
+                                   IBoundingBoxDecoder rawBoundingBoxParser) : IDecoder<Segmentation>
 {
-    public Segmentation[] ProcessTensorToResult(IYoloRawOutput output, Size size)
+    public Segmentation[] Decode(IYoloRawOutput output, Size size)
     {
         var adjustment = imageAdjustment.Calculate(size);
 
@@ -16,7 +18,7 @@ internal class SegmentationParser(YoloMetadata metadata,
 
         var maskWidth = output1.Dimensions[3];
         var maskHeight = output1.Dimensions[2];
-        var maskChannels = output1.Dimensions[1];
+        var maskChannelCount = output1.Dimensions[1];
 
         var maskPaddingX = adjustment.Padding.X * maskWidth / metadata.ImageSize.Width;
         var maskPaddingY = adjustment.Padding.Y * maskHeight / metadata.ImageSize.Height;
@@ -25,14 +27,19 @@ internal class SegmentationParser(YoloMetadata metadata,
         maskHeight -= maskPaddingY * 2;
 
         using var rawMaskBuffer = memoryAllocator.Allocate<float>(maskWidth * maskHeight);
-        using var weightsBuffer = memoryAllocator.Allocate<float>(maskChannels);
+        using var weightsBuffer = memoryAllocator.Allocate<float>(maskChannelCount);
 
         var weightsSpan = weightsBuffer.Memory.Span;
-        var rawMaskBitmap = new BitmapBuffer(rawMaskBuffer.Memory, maskWidth, maskHeight);
+        var mask = new BitmapBuffer(rawMaskBuffer.Memory, maskWidth, maskHeight);
 
-        var maskDataOffset = metadata.Names.Length + 4;
+        var offsetToWeights = metadata.AttributeOffset;
 
-        var boxes = rawBoundingBoxParser.Parse(output0);
+        var strideF = output0.Strides[metadata.FeatureAxis];
+        var strideP = output0.Strides[metadata.PredictionAxis];
+
+        var output0Span = output0.Span;
+
+        var boxes = rawBoundingBoxParser.Decode(output0);
 
         var result = new Segmentation[boxes.Length];
 
@@ -44,35 +51,35 @@ internal class SegmentationParser(YoloMetadata metadata,
             var bounds = imageAdjustment.Adjust(box.Bounds, adjustment);
 
             // Collect the weights for this box
-            for (var i = 0; i < maskChannels; i++)
+            for (var i = 0; i < maskChannelCount; i++)
             {
-                weightsSpan[i] = output0[0, maskDataOffset + i, boxIndex];
+                weightsSpan[i] = output0Span[boxIndex * strideP + (offsetToWeights + i) * strideF];
             }
 
-            rawMaskBitmap.Clear();
+            mask.Clear();
 
-            for (var y = 0; y < rawMaskBitmap.Height; y++)
+            for (var y = 0; y < mask.Height; y++)
             {
-                for (var x = 0; x < rawMaskBitmap.Width; x++)
+                for (var x = 0; x < mask.Width; x++)
                 {
                     var value = 0f;
 
-                    for (var i = 0; i < maskChannels; i++)
+                    for (var i = 0; i < maskChannelCount; i++)
                     {
                         value += output1[0, i, y + maskPaddingY, x + maskPaddingX] * weightsSpan[i];
                     }
 
-                    rawMaskBitmap[y, x] = Sigmoid(value);
+                    mask[y, x] = Sigmoid(value);
                 }
             }
 
-            var mask = new BitmapBuffer(bounds.Width, bounds.Height);
+            var resizedMask = new BitmapBuffer(bounds.Width, bounds.Height);
 
-            ResizeToTarget(rawMaskBitmap, mask, bounds.Location, size);
+            ResizeToTarget(mask, resizedMask, bounds.Location, size);
 
             result[index] = new Segmentation
             {
-                Mask = mask,
+                Mask = resizedMask,
                 Name = metadata.Names[box.NameIndex],
                 Bounds = bounds,
                 Confidence = box.Confidence,

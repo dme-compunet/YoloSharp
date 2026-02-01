@@ -2,7 +2,7 @@
 
 internal class NonMaxSuppressionService : INonMaxSuppressionService
 {
-    public ImmutableArray<RawBoundingBox> Apply(Span<RawBoundingBox> boxes, float iouThreshold)
+    public RawBoundingBox[] Apply(Span<RawBoundingBox> boxes, float iouThreshold)
     {
         if (boxes.Length == 0)
         {

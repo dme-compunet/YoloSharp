@@ -86,23 +86,23 @@ internal class PredictorServiceResolver : IDisposable
         switch (task)
         {
             case YoloTask.Pose:
-                services.AddSingleton<IParser<Pose>, PoseParser>();
+                services.AddSingleton<IDecoder<Pose>, PoseDecoder>();
                 break;
 
             case YoloTask.Detect:
-                services.AddSingleton<IParser<Detection>, DetectionParser>();
+                services.AddSingleton<IDecoder<Detection>, DetectionDecoder>();
                 break;
 
             case YoloTask.Obb:
-                services.AddSingleton<IParser<ObbDetection>, ObbDetectionParser>();
+                services.AddSingleton<IDecoder<ObbDetection>, ObbDetectionDecoder>();
                 break;
 
             case YoloTask.Segment:
-                services.AddSingleton<IParser<Segmentation>, SegmentationParser>();
+                services.AddSingleton<IDecoder<Segmentation>, SegmentationDecoder>();
                 break;
 
             case YoloTask.Classify:
-                services.AddSingleton<IParser<Classification>, ClassificationParser>();
+                services.AddSingleton<IDecoder<Classification>, ClassificationDecoder>();
                 break;
         }
 
@@ -123,19 +123,29 @@ internal class PredictorServiceResolver : IDisposable
 
     private static void AddRawBoundingBoxParser(ServiceCollection services, YoloArchitecture architecture, bool obb)
     {
-        if (architecture == YoloArchitecture.YoloV10)
+
+        if (architecture == YoloArchitecture.AnchorFree)
         {
-            services.AddSingleton<IRawBoundingBoxParser, YoloV10RawBoundingBoxParser>();
+            if (obb)
+            {
+                services.AddSingleton<IBoundingBoxDecoder, AnchorFreeOrientedBoxDecoder>();
+            }
+            else
+            {
+
+                services.AddSingleton<IBoundingBoxDecoder, AnchorFreeBoxDecoder>();
+            }
         }
+        // anchor based
         else
         {
             if (obb)
             {
-                services.AddSingleton<IRawBoundingBoxParser, Yolo11RawOrientedBoundingBoxParser>();
+                services.AddSingleton<IBoundingBoxDecoder, AnchorBasedOrientedBoundingBoxDecoder>();
             }
             else
             {
-                services.AddSingleton<IRawBoundingBoxParser, Yolo11RawBoundingBoxParser>();
+                services.AddSingleton<IBoundingBoxDecoder, AnchorBasedBoundingBoxDecoder>();
             }
         }
 

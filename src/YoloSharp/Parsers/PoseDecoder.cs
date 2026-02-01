@@ -1,45 +1,54 @@
 ﻿namespace Compunet.YoloSharp.Parsers;
 
-internal class PoseParser(YoloPoseMetadata metadata,
-                          IImageAdjustmentService imageAdjustment,
-                          IRawBoundingBoxParser rawBoundingBoxParser) : IParser<Pose>
+internal class PoseDecoder(YoloPoseMetadata metadata,
+                           IImageAdjustmentService imageAdjustment,
+                           IBoundingBoxDecoder rawBoundingBoxParser) : IDecoder<Pose>
 {
-    public Pose[] ProcessTensorToResult(IYoloRawOutput output, Size size)
+    public Pose[] Decode(IYoloRawOutput output, Size size)
     {
         var tensor = output.Output0;
         var adjustment = imageAdjustment.Calculate(size);
 
-        var boxes = rawBoundingBoxParser.Parse(tensor);
+        var boxes = rawBoundingBoxParser.Decode(tensor);
 
         var shape = metadata.KeypointShape;
         var result = new Pose[boxes.Length];
 
         var tensorSpan = tensor.Span;
-        var dataStride = tensor.Strides[1];
+
+        var strideF = tensor.Strides[metadata.FeatureAxis];
+        var strideP = tensor.Strides[metadata.PredictionAxis];
+
+        var offsetToKeypoint = metadata.AttributeOffset;
 
         for (var i = 0; i < boxes.Length; i++)
         {
             var box = boxes[i];
             var keypoints = new Keypoint[shape.Count];
 
+            var baseOffset = box.Index * strideP;
+
             for (var index = 0; index < shape.Count; index++)
             {
-                var offset = index * shape.Channels + 4 + metadata.Names.Length;
+                var offset = index * shape.Channels + offsetToKeypoint;
 
-                var pointX = (int)((tensorSpan[offset * dataStride + box.Index] - adjustment.Padding.X) * adjustment.Ratio.X);
-                var pointY = (int)((tensorSpan[(offset + 1) * dataStride + box.Index] - adjustment.Padding.Y) * adjustment.Ratio.Y);
+                var pointX = tensorSpan[baseOffset + offset * strideF] - adjustment.Padding.X;
+                var pointY = tensorSpan[baseOffset + (offset + 1) * strideF] - adjustment.Padding.Y;
+
+                pointX *= adjustment.Ratio.X;
+                pointY *= adjustment.Ratio.Y;
 
                 var pointConfidence = metadata.KeypointShape.Channels switch
                 {
                     2 => 1f,
-                    3 => tensorSpan[(offset + 2) * dataStride + box.Index],
+                    3 => tensorSpan[baseOffset + (offset + 2) * strideF],
                     _ => throw new InvalidOperationException("Unexpected keypoint shape")
                 };
 
                 keypoints[index] = new Keypoint
                 {
                     Index = index,
-                    Point = new Point(pointX, pointY),
+                    Point = new Point((int)pointX, (int)pointY),
                     Confidence = pointConfidence
                 };
             }

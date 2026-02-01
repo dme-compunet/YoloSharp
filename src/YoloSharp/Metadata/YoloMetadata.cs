@@ -18,13 +18,25 @@ public class YoloMetadata
 
     public YoloArchitecture Architecture { get; }
 
+    internal bool IsEndToEnd { get; }
+
+    internal int BatchAxis { get; }
+
+    internal int PredictionAxis { get; }
+
+    internal int FeatureAxis { get; }
+
+    internal int AttributeOffset { get; }
+
     internal YoloMetadata(InferenceSession session)
         :
-        this(session.ModelMetadata.CustomMetadataMap, ParseYoloArchitecture(session))
+        this(session, ParseYoloArchitecture(session))
     { }
 
-    internal YoloMetadata(Dictionary<string, string> metadata, YoloArchitecture architecture)
+    internal YoloMetadata(InferenceSession session, YoloArchitecture architecture)
     {
+        var metadata = session.ModelMetadata.CustomMetadataMap;
+
         Author = metadata["author"];
         Description = metadata["description"];
         Version = metadata["version"];
@@ -39,10 +51,32 @@ public class YoloMetadata
             _ => throw new InvalidOperationException("Unknow YOLO 'task' value")
         };
 
-        Architecture = architecture;
+        //Architecture = architecture;
         BatchSize = int.Parse(metadata["batch"]);
         ImageSize = ParseSize(metadata["imgsz"]);
         Names = ParseNames(metadata["names"]);
+
+        if (metadata.TryGetValue("end2end", out var value))
+        {
+            IsEndToEnd = value.Equals("true", StringComparison.CurrentCultureIgnoreCase);
+        }
+
+        Architecture = DetectArchitecture(Names.Length, session.OutputMetadata["output0"].Dimensions, Task);
+
+        BatchAxis = 0;
+
+        if (Architecture == YoloArchitecture.AnchorFree)
+        {
+            PredictionAxis = 1;
+            FeatureAxis = 2;
+            AttributeOffset = 6;
+        }
+        else
+        {
+            PredictionAxis = 2;
+            FeatureAxis = 1;
+            AttributeOffset = 4 + Names.Length;
+        }
     }
 
     public static YoloMetadata Parse(InferenceSession session)
@@ -60,6 +94,23 @@ public class YoloMetadata
         {
             throw new InvalidOperationException("The metadata parsing failed, making sure you use an official YOLO model", inner);
         }
+    }
+
+    private static YoloArchitecture DetectArchitecture(int outputCount, int[] shape, YoloTask task)
+    {
+        // TODO
+
+        if (shape.Length != 3)
+        {
+            return YoloArchitecture.Unknown;
+        }
+
+        if (shape[1] == 300)
+        {
+            return YoloArchitecture.AnchorFree;
+        }
+
+        return YoloArchitecture.AnchorBased;
     }
 
     private static YoloArchitecture ParseYoloArchitecture(InferenceSession session)

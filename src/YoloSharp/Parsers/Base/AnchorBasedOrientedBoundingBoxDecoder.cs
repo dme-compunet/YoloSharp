@@ -1,18 +1,18 @@
 ﻿namespace Compunet.YoloSharp.Parsers.Base;
 
-internal class Yolo11RawOrientedBoundingBoxParser(YoloMetadata metadata,
-                                                  YoloConfiguration configuration,
-                                                  IMemoryAllocatorService memoryAllocator,
-                                                  INonMaxSuppressionService nonMaxSuppression)
-    : Yolo11RawBoundingBoxParser(metadata,
-                                 configuration,
-                                 memoryAllocator,
-                                 nonMaxSuppression)
+internal class AnchorBasedOrientedBoundingBoxDecoder(YoloMetadata metadata,
+                                                     YoloConfiguration configuration,
+                                                     IMemoryAllocatorService memoryAllocator,
+                                                     INonMaxSuppressionService nonMaxSuppression)
+    : AnchorBasedBoundingBoxDecoder(metadata,
+                                   configuration,
+                                   memoryAllocator,
+                                   nonMaxSuppression)
 {
     private readonly int _namesCount = metadata.Names.Length;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected override void ParseBox(Span<float> tensor, int boxStride, int boxIndex, out RectangleF bounds, out float angle)
+    protected override void DecodeBox(Span<float> tensor, int boxStride, int boxIndex, out RectangleF bounds, out float angle)
     {
         var x = tensor[boxIndex];
         var y = tensor[1 * boxStride + boxIndex];

@@ -1,6 +1,6 @@
 ﻿namespace Compunet.YoloSharp.Contracts.Services;
 
-internal interface IParser<T> where T : IYoloPrediction<T>
+internal interface IDecoder<T> where T : IYoloPrediction<T>
 {
-    public T[] ProcessTensorToResult(IYoloRawOutput output, Size size);
+    public T[] Decode(IYoloRawOutput output, Size size);
 }

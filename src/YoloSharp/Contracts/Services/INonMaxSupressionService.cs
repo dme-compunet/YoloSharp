@@ -2,5 +2,5 @@
 
 internal interface INonMaxSuppressionService
 {
-    public ImmutableArray<RawBoundingBox> Apply(Span<RawBoundingBox> boxes, float iouThreshold);
+    public RawBoundingBox[] Apply(Span<RawBoundingBox> boxes, float iouThreshold);
 }

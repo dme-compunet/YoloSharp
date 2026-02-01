@@ -1,11 +1,11 @@
 ﻿namespace Compunet.YoloSharp.Parsers.Base;
 
-internal class Yolo11RawBoundingBoxParser(YoloMetadata metadata,
-                                          YoloConfiguration configuration,
-                                          IMemoryAllocatorService memoryAllocator,
-                                          INonMaxSuppressionService nonMaxSuppression) : IRawBoundingBoxParser
+internal class AnchorBasedBoundingBoxDecoder(YoloMetadata metadata,
+                                            YoloConfiguration configuration,
+                                            IMemoryAllocatorService memoryAllocator,
+                                            INonMaxSuppressionService nonMaxSuppression) : IBoundingBoxDecoder
 {
-    public ImmutableArray<RawBoundingBox> Parse(MemoryTensor<float> tensor)
+    public RawBoundingBox[] Decode(MemoryTensor<float> tensor)
     {
         var boxStride = tensor.Strides[1];
         var boxesCount = tensor.Dimensions[2];
@@ -29,7 +29,7 @@ internal class Yolo11RawBoundingBoxParser(YoloMetadata metadata,
                     continue;
                 }
 
-                ParseBox(tensorSpan, boxStride, boxIndex, out var bounds, out var angle);
+                DecodeBox(tensorSpan, boxStride, boxIndex, out var bounds, out var angle);
 
                 if (bounds.Width == 0 || bounds.Height == 0)
                 {
@@ -47,11 +47,18 @@ internal class Yolo11RawBoundingBoxParser(YoloMetadata metadata,
             }
         }
 
-        return nonMaxSuppression.Apply(boxesSpan[..boxesIndex], configuration.IoU);
+        boxesSpan = boxesSpan[..boxesIndex];
+
+        if (metadata.IsEndToEnd)
+        {
+            return [.. boxesSpan];
+        }
+
+        return nonMaxSuppression.Apply(boxesSpan, configuration.IoU);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected virtual void ParseBox(Span<float> tensor, int boxStride, int boxIndex, out RectangleF bounds, out float angle)
+    protected virtual void DecodeBox(Span<float> tensor, int boxStride, int boxIndex, out RectangleF bounds, out float angle)
     {
         var x = tensor[0 + boxIndex];
         var y = tensor[1 * boxStride + boxIndex];

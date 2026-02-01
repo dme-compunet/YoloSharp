@@ -1,8 +1,8 @@
 ﻿namespace Compunet.YoloSharp.Parsers;
 
-internal class ClassificationParser(YoloMetadata metadata) : IParser<Classification>
+internal class ClassificationDecoder(YoloMetadata metadata) : IDecoder<Classification>
 {
-    public Classification[] ProcessTensorToResult(IYoloRawOutput tensor, Size size)
+    public Classification[] Decode(IYoloRawOutput tensor, Size size)
     {
         var tensorSpan = tensor.Output0.Span;
 
