@@ -4,11 +4,21 @@
 
 # Features
 
-- **YOLO Tasks** 🌟 Support for all YOLO vision tasks ([Detect](https://docs.ultralytics.com/tasks/detect) | [OBB](https://docs.ultralytics.com/tasks/obb) | [Pose](https://docs.ultralytics.com/tasks/pose) | [Segment](https://docs.ultralytics.com/tasks/segment) | [Classify](https://docs.ultralytics.com/tasks/classify))
+- **YOLO Tasks** 🌟 Support for all YOLO vision tasks (
+    [Detect](https://docs.ultralytics.com/tasks/detect) | 
+    [OBB](https://docs.ultralytics.com/tasks/obb) | 
+    [Pose](https://docs.ultralytics.com/tasks/pose) | 
+    [Segment](https://docs.ultralytics.com/tasks/segment) | 
+    [Classify](https://docs.ultralytics.com/tasks/classify))
 - **High Performance** 🚀 Various techniques and use of .NET features to maximize performance
 - **Reduced Memory Usage** 🧠 By reusing memory blocks and reducing the pressure on the GC
 - **Plotting Options** ✏️ Draw the predictions on the target image to preview the model results
-- **YOLO Versions** 🔧 Includes support for: [YOLOv8](https://docs.ultralytics.com/models/yolov8) [YOLOv10](https://docs.ultralytics.com/models/yolov10) [YOLO11](https://docs.ultralytics.com/models/yolo11) [YOLO12](https://docs.ultralytics.com/models/yolo12)
+- **YOLO Versions** 🔧 Includes support for: 
+[YOLOv8](https://docs.ultralytics.com/models/yolov8) 
+[YOLOv10](https://docs.ultralytics.com/models/yolov10) 
+[YOLO11](https://docs.ultralytics.com/models/yolo11) 
+[YOLO12](https://docs.ultralytics.com/models/yolo12)
+[YOLO26](https://docs.ultralytics.com/models/yolo26)
 
 # Installation
 
