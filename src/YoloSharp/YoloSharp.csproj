@@ -31,7 +31,7 @@
 		<PackageTags>image-classification object-detection pose-estimation instance-segmentation onnx imagesharp onnx-runtime ultralytics yolov8 yolov10 yolo11 yolov12</PackageTags>
 		<PackageIcon>Icon.png</PackageIcon>
 		<Authors>Compunet</Authors>
-		<Version>6.0.7</Version>
+		<Version>6.1.0</Version>
 		<Deterministic>true</Deterministic>
 		<DebugType>embedded</DebugType>
 	</PropertyGroup>
