@@ -53,4 +53,14 @@ public class BitmapBuffer
 
         return (y * _width) + x;
     }
+
+    // <summary>
+    /// Returns a read-only span over the underlying buffer.
+    /// </summary>
+    public ReadOnlySpan<float> AsReadOnlySpan() => _buffer.Span;
+
+    /// <summary>
+    /// Returns a read-only memory over the underlying buffer.
+    /// </summary>
+    public ReadOnlyMemory<float> AsReadOnlyMemory() => _buffer;
 }
