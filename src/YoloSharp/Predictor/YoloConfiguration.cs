@@ -35,6 +35,11 @@ public class YoloConfiguration : IEquatable<YoloConfiguration>
     /// </summary>
     public bool SuppressParallelInference { get; set; } = false;
 
+    /// <summary>
+    /// The resampling algorithm. Bicubic - recommended in the ImageSharp documentation
+    /// </summary>
+    public IResampler ImageResampler { get; set; } = KnownResamplers.Bicubic;
+
     public bool Equals(YoloConfiguration? other)
     {
         if (other is null)
