@@ -1,4 +1,6 @@
-﻿namespace Compunet.YoloSharp;
+using SixLabors.ImageSharp.Processing.Processors.Transforms;
+
+namespace Compunet.YoloSharp;
 
 /// <summary>
 /// Configuration settings for the YoloPredictor.
