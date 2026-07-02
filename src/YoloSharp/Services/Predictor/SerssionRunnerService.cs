@@ -167,7 +167,7 @@ internal class SessionRunner(YoloSession yoloSession,
                    : ResizeMode.Stretch,
 
             // Resampling algorithm
-            Sampler = configuration.ImageResampler
+            Sampler = configuration.GetImageResampler()
         };
 
         // Create resized image
