@@ -40,7 +40,22 @@ public class YoloConfiguration : IEquatable<YoloConfiguration>
     /// <summary>
     /// The resampling algorithm. Bicubic - recommended in the ImageSharp documentation
     /// </summary>
-    public IResampler ImageResampler { get; set; } = KnownResamplers.Bicubic;
+    public YoloImageResampler ImageResampler { get; set; } = YoloImageResampler.NearestNeighbor;
+
+    internal IResampler GetImageResampler() => ImageResampler switch
+    {
+        YoloImageResampler.Bicubic => KnownResamplers.Bicubic,
+        YoloImageResampler.NearestNeighbor => KnownResamplers.NearestNeighbor,
+        YoloImageResampler.Box => KnownResamplers.Box,
+        YoloImageResampler.Triangle => KnownResamplers.Triangle,
+        YoloImageResampler.Hermite => KnownResamplers.Hermite,
+        YoloImageResampler.Lancos2 => KnownResamplers.Lanczos2,
+        YoloImageResampler.Lanczos3 => KnownResamplers.Lanczos3,
+        YoloImageResampler.Lanczos5 => KnownResamplers.Lanczos5,
+        YoloImageResampler.Lanczos8 => KnownResamplers.Lanczos8,
+        YoloImageResampler.Spline => KnownResamplers.Spline,
+        _ => KnownResamplers.NearestNeighbor
+    };
 
     public bool Equals(YoloConfiguration? other)
     {
