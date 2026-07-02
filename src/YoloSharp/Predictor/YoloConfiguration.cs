@@ -49,7 +49,7 @@ public class YoloConfiguration : IEquatable<YoloConfiguration>
         YoloImageResampler.Box => KnownResamplers.Box,
         YoloImageResampler.Triangle => KnownResamplers.Triangle,
         YoloImageResampler.Hermite => KnownResamplers.Hermite,
-        YoloImageResampler.Lancos2 => KnownResamplers.Lanczos2,
+        YoloImageResampler.Lanczos2 => KnownResamplers.Lanczos2,
         YoloImageResampler.Lanczos3 => KnownResamplers.Lanczos3,
         YoloImageResampler.Lanczos5 => KnownResamplers.Lanczos5,
         YoloImageResampler.Lanczos8 => KnownResamplers.Lanczos8,
