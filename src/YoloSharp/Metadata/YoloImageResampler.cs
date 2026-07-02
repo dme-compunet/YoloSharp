@@ -8,7 +8,7 @@ public enum YoloImageResampler
     Bicubic,
     Triangle,
     NearestNeighbor,
-    Lancos2,
+    Lanczos2,
     Lanczos3,
     Lanczos5,
     Lanczos8,
