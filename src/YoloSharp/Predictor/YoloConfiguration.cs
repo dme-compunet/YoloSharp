@@ -1,4 +1,6 @@
-﻿namespace Compunet.YoloSharp;
+using SixLabors.ImageSharp.Processing.Processors.Transforms;
+
+namespace Compunet.YoloSharp;
 
 /// <summary>
 /// Configuration settings for the YoloPredictor.
@@ -34,6 +36,26 @@ public class YoloConfiguration : IEquatable<YoloConfiguration>
     /// Specify whether to suppress parallel inference (pre-processing and post-processing will run in parallelly). Default is false.
     /// </summary>
     public bool SuppressParallelInference { get; set; } = false;
+
+    /// <summary>
+    /// The resampling algorithm. Bicubic - recommended in the ImageSharp documentation
+    /// </summary>
+    public YoloImageResampler ImageResampler { get; set; } = YoloImageResampler.NearestNeighbor;
+
+    internal IResampler GetImageResampler() => ImageResampler switch
+    {
+        YoloImageResampler.Bicubic => KnownResamplers.Bicubic,
+        YoloImageResampler.NearestNeighbor => KnownResamplers.NearestNeighbor,
+        YoloImageResampler.Box => KnownResamplers.Box,
+        YoloImageResampler.Triangle => KnownResamplers.Triangle,
+        YoloImageResampler.Hermite => KnownResamplers.Hermite,
+        YoloImageResampler.Lanczos2 => KnownResamplers.Lanczos2,
+        YoloImageResampler.Lanczos3 => KnownResamplers.Lanczos3,
+        YoloImageResampler.Lanczos5 => KnownResamplers.Lanczos5,
+        YoloImageResampler.Lanczos8 => KnownResamplers.Lanczos8,
+        YoloImageResampler.Spline => KnownResamplers.Spline,
+        _ => KnownResamplers.NearestNeighbor
+    };
 
     public bool Equals(YoloConfiguration? other)
     {
