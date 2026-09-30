@@ -37,6 +37,22 @@ internal class SegmentationDecoder(YoloMetadata metadata,
 
         var output0Span = output0.Span;
 
+        // PERF: the mask reconstruction below originally iterated the **channel dimension innermost**
+        // (`for y: for x: for i: value += output1[0, i, y, x] * w[i]`).
+        // output1 is laid out [batch][channel][y][x], so walking `i` with (y, x) fixed strides
+        // maskHeight * maskWidth * 4 bytes (~160 KB for a 200x200 prototype) — i.e. nearly every
+        // multiply-add was a cache miss. A desktop CPU with a large L3 absorbs this; a phone
+        // (1-4 MB of last-level cache) does not: the same managed code measured ~50 ms on Windows
+        // vs ~860 ms on Android (17x) for 16 objects, ~20.5M cache-missing accesses.
+        // Fix: move the channel dimension to the OUTER loop so the innermost loop walks x
+        // contiguously, hoist the strides, and work on the underlying Span instead of the
+        // BitmapBuffer indexer (which evaluates two ArgumentOutOfRange branches per access).
+        var output1Span = output1.Span;
+        var strideChannel = output1.Strides[1];
+        var strideRow = output1.Strides[2];
+        var strideCol = output1.Strides[3];
+        var maskSpan = rawMaskBuffer.Memory.Span;
+
         var boxes = boxDecoder.Decode(output0);
 
         var result = new Segmentation[boxes.Length];
@@ -54,21 +70,34 @@ internal class SegmentationDecoder(YoloMetadata metadata,
                 weightsSpan[i] = output0Span[boxIndex * strideP + (offsetToWeights + i) * strideF];
             }
 
-            mask.Clear();
+            // Equivalent to mask.Clear() (same buffer), but limited to the region actually used.
+            maskSpan.Slice(0, maskWidth * maskHeight).Clear();
 
-            for (var y = 0; y < mask.Height; y++)
+            // Channel dimension outermost: the inner loop now walks x contiguously (see above).
+            for (var i = 0; i < maskChannelCount; i++)
             {
-                for (var x = 0; x < mask.Width; x++)
+                var weight = weightsSpan[i];
+                var channelBase = (i * strideChannel)
+                                  + (maskPaddingY * strideRow)
+                                  + (maskPaddingX * strideCol);
+
+                for (var y = 0; y < maskHeight; y++)
                 {
-                    var value = 0f;
+                    var inRow = channelBase + (y * strideRow);
+                    var outRow = y * maskWidth;
 
-                    for (var i = 0; i < maskChannelCount; i++)
+                    for (var x = 0; x < maskWidth; x++)
                     {
-                        value += output1[0, i, y + maskPaddingY, x + maskPaddingX] * weightsSpan[i];
+                        maskSpan[outRow + x] += output1Span[inRow + (x * strideCol)] * weight;
                     }
-
-                    mask[y, x] = Sigmoid(value);
                 }
+            }
+
+            // Sigmoid as its own pass: same number of MathF.Exp calls, but over contiguous
+            // memory and no longer interleaved with the accumulation loop above.
+            for (var k = 0; k < maskWidth * maskHeight; k++)
+            {
+                maskSpan[k] = Sigmoid(maskSpan[k]);
             }
 
             var resizedMask = new BitmapBuffer(bounds.Width, bounds.Height);
@@ -89,38 +118,68 @@ internal class SegmentationDecoder(YoloMetadata metadata,
 
     private static void ResizeToTarget(BitmapBuffer source, BitmapBuffer target, Point position, Size size)
     {
+        // PERF: same class of problem as the mask reconstruction above — per-pixel access went
+        // through the BitmapBuffer indexer, which evaluates two ArgumentOutOfRange branches on
+        // every read/write. Object boxes are often several hundred pixels per side, so this added
+        // up to tens of millions of branches per image.
+        // Now reads/writes go through Span with precomputed row offsets. The interpolation
+        // formula — including the exact multiply/divide order of `(x + position.X) * (w - 1) / (size - 1)`
+        // — is copied verbatim, so the output is bit-for-bit identical to the previous implementation.
+        var src = source.AsReadOnlySpan();
+        var dst = target.AsSpan();
+
+        var sourceWidth = source.Width;
+        var sourceHeight = source.Height;
+        var targetWidth = target.Width;
+
         for (var y = 0; y < target.Height; y++)
         {
-            for (var x = 0; x < target.Width; x++)
+            var outRow = y * targetWidth;
+
+            // Calculate source coordinates
+            var sourceY = (float)(y + position.Y) * (sourceHeight - 1) / (size.Height - 1);
+
+            // Check if source coordinates are out of bounds
+            if (sourceY < 0 || sourceY >= sourceHeight)
+            {
+                dst.Slice(outRow, targetWidth).Clear();
+                continue;
+            }
+
+            // Ensure coordinates are within valid range for interpolation
+            var y0 = Math.Max(0, Math.Min((int)sourceY, sourceHeight - 2));
+            var y1 = y0 + 1;
+
+            // Calculate interpolation factors
+            var yLerp = sourceY - y0;
+
+            var row0 = y0 * sourceWidth;
+            var row1 = y1 * sourceWidth;
+
+            for (var x = 0; x < targetWidth; x++)
             {
                 // Calculate source coordinates
-                var sourceX = (float)(x + position.X) * (source.Width - 1) / (size.Width - 1);
-                var sourceY = (float)(y + position.Y) * (source.Height - 1) / (size.Height - 1);
+                var sourceX = (float)(x + position.X) * (sourceWidth - 1) / (size.Width - 1);
 
                 // Check if source coordinates are out of bounds
-                if (sourceY < 0 || sourceY >= source.Height ||
-                    sourceX < 0 || sourceX >= source.Width)
+                if (sourceX < 0 || sourceX >= sourceWidth)
                 {
-                    target[y, x] = 0f;
+                    dst[outRow + x] = 0f;
                     continue;
                 }
 
                 // Ensure coordinates are within valid range for interpolation
-                var x0 = Math.Max(0, Math.Min((int)sourceX, source.Width - 2));
-                var y0 = Math.Max(0, Math.Min((int)sourceY, source.Height - 2));
-
+                var x0 = Math.Max(0, Math.Min((int)sourceX, sourceWidth - 2));
                 var x1 = x0 + 1;
-                var y1 = y0 + 1;
 
                 // Calculate interpolation factors
                 var xLerp = sourceX - x0;
-                var yLerp = sourceY - y0;
 
                 // Perform bilinear interpolation
-                var top = Lerp(source[y0, x0], source[y0, x1], xLerp);
-                var bottom = Lerp(source[y1, x0], source[y1, x1], xLerp);
+                var top = Lerp(src[row0 + x0], src[row0 + x1], xLerp);
+                var bottom = Lerp(src[row1 + x0], src[row1 + x1], xLerp);
 
-                target[y, x] = Lerp(top, bottom, yLerp);
+                dst[outRow + x] = Lerp(top, bottom, yLerp);
             }
         }
     }

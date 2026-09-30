@@ -63,4 +63,13 @@ public class BitmapBuffer
     /// Returns a read-only memory over the underlying buffer.
     /// </summary>
     public ReadOnlyMemory<float> AsReadOnlyMemory() => _buffer;
+
+    /// <summary>
+    /// Returns a writable span over the underlying buffer.
+    /// </summary>
+    /// <remarks>
+    /// Added alongside the segmentation decoder performance fix: the write side also needs to
+    /// bypass the per-pixel bounds checks of <see cref="this[int,int]"/>.
+    /// </remarks>
+    public Span<float> AsSpan() => _buffer.Span;
 }
